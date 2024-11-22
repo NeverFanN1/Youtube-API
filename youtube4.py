@@ -5,11 +5,12 @@ import creds
 api_key = creds.api_key
 youtube = build('youtube', 'v3', developerKey=api_key)
 
-def chan_search():
+def chan_search(channel):
     
     search_request = youtube.search().list(
     part='snippet',
-    q='Corey Schafer',
+    #q='Corey Schafer',
+    q=channel,
     type='channel',
     maxResults=2
     )
@@ -27,4 +28,10 @@ def chan_search():
         print()
 
 
-chan_search()
+def menu():
+    channel = input("Enter channel to search for: ")
+
+    chan_search(channel)
+
+#chan_search('Corey Schafer')
+menu()
