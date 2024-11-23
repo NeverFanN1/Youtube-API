@@ -16,22 +16,30 @@ def chan_search(channel):
     )
     search_response = search_request.execute()
     search_list = search_response['items']
-    print()
-    #print(search_response['items'][0]['snippet']['channelId'])
-    #print(search_response['items'][0]['snippet']['title'])
-        #snippet = i.get('snippet', {})
-        #print(snippet)
+    Id_list = []
+    name_list = []
     
     for i in search_list:
         print(i['snippet']['channelId'])
         print(i['snippet']['title'])
         print()
+            
+        Id_list.append(i['snippet']['channelId'])
+        name_list.append(i['snippet']['title'])
+
+    return Id_list, name_list
 
 
 def menu():
-    channel = input("Enter channel to search for: ")
+    search = 1
+    while search != 0:
+        channel = input("Enter channel to search for: ")
 
-    chan_search(channel)
+        #chan_search(channel)
+        Id_list, name_list = chan_search(channel)
+        print("IDs: ", Id_list)
+        print("Channels: ", name_list)
+        search = 0
 
 #chan_search('Corey Schafer')
 menu()
