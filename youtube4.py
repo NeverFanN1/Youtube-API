@@ -54,7 +54,9 @@ def pl_find(select, Id_list):
 
 
 def vid_find(pl_select, plId_list):
-    titleList = []
+    vid_titlelist = []
+    vid_channamelist = [] #for names of channels whose videos in playlist
+    vid_idlist = [] # for video ids
     nextPageToken = None
     while True: #in while loop so can take more than 5 videos
         #gets playlist video IDs
@@ -78,16 +80,20 @@ def vid_find(pl_select, plId_list):
         vid_response = vid_request.execute()
 
         for i in vid_response['items']:
-            titleList.append(i['snippet']['title'])
+            #print(i)
+            vid_titlelist.append(i['snippet']['title'])
+            vid_channamelist.append(i['snippet']['channelTitle'])
+            vid_idlist.append(i['id'])
 
         nextPageToken = pl_response.get('nextPageToken') #returns non if no more pages 
         if not nextPageToken:
             break
 
-    return vid_response, titleList
+    return vid_response,vid_titlelist, vid_channamelist, vid_idlist
 
 
 def menu():
+    csvchoice = '0'
     search = 1
     while search != 0:
         channel = input("Enter channel to search for: ")
@@ -95,7 +101,7 @@ def menu():
 
         Id_list, name_list = chan_search(channel)
         
-        for i in range(len(Id_list)):
+        for i in range(len(Id_list)): 
             print(i+1,end=", ")
             print(name_list[i], end=", ")
             print(Id_list[i])
@@ -106,7 +112,7 @@ def menu():
 
         pl_search = 1
 
-        while pl_search != 0:
+        while pl_search != 0: #do something so it doesn't pritn channel willy nilly
 
             for i in range(len(Id_list)):
                 print(i+1,end=", ")
@@ -116,10 +122,21 @@ def menu():
             pl_select = int(input("Select playlist: ")) #variable for selecting which playlist
             pl_select = pl_select - 1
             print("pl_select: ", pl_select)
-            vid_response, titleList = vid_find(pl_select, plId_list)
+            vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_select, plId_list)
 
-            #print(vid_response)
-            print(titleList) #make it print titleList with spaces down, but also print other aspects of viseos, like URL, and title length
+        
+            for i in range(len(vid_titlelist)):
+                print(i+1,end=", ")
+                print("Title: ",vid_titlelist[i], " Channel: ", vid_channamelist[i], " Video ID: ", vid_idlist[i])
+
+            print()
+            while csvchoice == '0':
+                csvchoice = input("Want to print to csv? Y for yes, N for no: ")
+                if csvchoice == 'y' or csvchoice == 'Y':
+                    print("Call csv function")
+                else:
+                    break
+                
 
 
         search = 0
