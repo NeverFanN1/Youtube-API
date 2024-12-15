@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
 import creds
+import csv
 
 api_key = creds.api_key
 youtube = build('youtube', 'v3', developerKey=api_key)
@@ -91,6 +92,21 @@ def vid_find(pl_select, plId_list):
 
     return vid_response,vid_titlelist, vid_channamelist, vid_idlist
 
+def pl_csv(vid_titlelist, vid_chananmelist, vid_idlist):
+
+    pl_vids = [
+        {'Title': vid_title, 'Channel':vid_channel, 'Video ID':vid_id}
+        for vid_title, vid_channel, vid_id in zip(vid_titlelist, vid_chananmelist, vid_idlist)
+    ]
+
+
+    with open('playlist.csv', mode='w', newline='') as csvfile:
+        fieldnames = ['Title', 'Channel', 'Video ID']
+        writer = csv.DictWriter(csvfile, fieldnames)
+        writer.writeheader()
+        writer.writerows(pl_vids)
+
+
 
 def menu():
     csvchoice = '0'
@@ -112,7 +128,7 @@ def menu():
 
         pl_search = 1
 
-        while pl_search != 0: #do something so it doesn't pritn channel willy nilly
+        while pl_search != 0: #do something so it doesn't print channel willy nilly
 
             for i in range(len(Id_list)):
                 print(i+1,end=", ")
@@ -133,11 +149,13 @@ def menu():
             while csvchoice == '0':
                 csvchoice = input("Want to print to csv? Y for yes, N for no: ")
                 if csvchoice == 'y' or csvchoice == 'Y':
-                    print("Call csv function")
-                else:
+                    pl_csv(vid_titlelist, vid_channamelist, vid_idlist)
+                    print("CSV printed")
+                elif csvchoice == 'n':
                     break
+                else:
+                    print("Invalid input, enter 'y' or 'n'.")
                 
-
 
         search = 0
 
