@@ -218,7 +218,7 @@ def menu2():
     csvchoice = '0'
     choice = 1
     while choice != 0:
-        choice2 = input("Enter 'a' to enter playlist URL directly, 'b' to search channel, 'c' to enter playlist URL, and 'd' to exit: ")
+        choice2 = input("Enter 'a' search for channel and get playlists, 'b' to enter channel URL, 'c' to enter playlist URL, and 'd' to exit: ")
         if choice2 == 'a':
             channel = input("Enter channel to search for: ")
             print()
@@ -249,6 +249,7 @@ def menu2():
                 print("pl_select: ", pl_select)
                 pl_id = plId_list[pl_select] 
                 vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_id) #gets videos in playlist
+                go  = True
 
             
                 for i in range(len(vid_titlelist)):
@@ -257,10 +258,14 @@ def menu2():
                 
                 pl_search = 0 #changed to 0 so it doesn't print willy nilly
 
+                go = csvmenu(vid_titlelist, vid_channamelist, vid_idlist, go)
+                if go is False:
+                    break
+
                 print()
-        elif choice2 == 'b': #will have option for getting channel ID from URL
+        elif choice2 == 'b': #will have option for getting channel ID from channel URL
             print("Placeholder")
-        elif choice2 == 'c': #add option to search playlist by title or whatnot
+        elif choice2 == 'c': #add option to search playlist videos by title or whatnot
             url = input("Enter playlist URL: ")
             pl_id = pl_url(url) #gets playlist ID from URL
             vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_id)
