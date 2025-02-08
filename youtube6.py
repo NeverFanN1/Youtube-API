@@ -142,64 +142,6 @@ def pl_url(url):
         return None
 
 
-
-def menu():
-    csvchoice = '0'
-    search = 1
-
-
-    while search != 0:
-        channel = input("Enter channel to search for: ")
-        print()
-
-        Id_list, name_list = chan_search(channel)
-        
-        for i in range(len(Id_list)): 
-            print(i+1,end=", ")
-            print(name_list[i], end=", ")
-            print(Id_list[i])
-            
-        select = int(input("Select channel: "))
-        select = select - 1
-        plTitle_select = Id_list[select]
-        plTitle_list, plId_list = pl_find(plTitle_select) #gets playlists from channel
-
-        pl_search = 1
-
-        while pl_search != 0:
-
-            for i in range(len(Id_list)):
-                print(i+1,end=", ")
-                print(plTitle_list[i], end=", ")
-                print(plId_list[i])
-            
-            pl_select = int(input("Select playlist: ")) #variable for selecting which playlist
-            pl_select = pl_select - 1
-            print("pl_select: ", pl_select)
-            pl_id = plId_list[pl_select] 
-            vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_id) #gets videos in playlist
-
-        
-            for i in range(len(vid_titlelist)):
-                print(i+1,end=", ")
-                print("Title: ",vid_titlelist[i], " Channel: ", vid_channamelist[i], " Video ID: ", vid_idlist[i])
-            
-            pl_search = 0 #changed to 0 so it doesn't print willy nilly
-
-            print()
-            while csvchoice == '0':
-                csvchoice = input("Want to print to csv? Y for yes, N for no: ")
-                if csvchoice == 'y' or csvchoice == 'Y':
-                    pl_csv(vid_titlelist, vid_channamelist, vid_idlist)
-                    print("CSV printed")
-                elif csvchoice == 'n':
-                    break
-                else:
-                    print("Invalid input, enter 'y' or 'n'.")
-                
-
-        search = 0
-
 def csvmenu(vid_titlelist, vid_channamelist, vid_idlist, go):
     csvchoice = '0'
     while csvchoice == '0':
@@ -212,6 +154,51 @@ def csvmenu(vid_titlelist, vid_channamelist, vid_idlist, go):
             return go
         else:
             print("Invalid input, enter 'y' or 'n'.")
+
+def chan_search_menu():
+    channel = input("Enter channel to search for: ")
+    print()
+
+    Id_list, name_list = chan_search(channel) #searches channels
+            
+    for i in range(len(Id_list)): #prints out channel search
+        print(i+1,end=", ")
+        print(name_list[i], end=", ")
+        print(Id_list[i])
+                
+    select = int(input("Select channel: ")) #selects channel
+    select = select - 1
+    plTitle_select = Id_list[select]
+    plTitle_list, plId_list = pl_find(plTitle_select) #gets playlists from channel
+
+    pl_search = 1
+
+    while pl_search != 0:
+
+        for i in range(len(Id_list)):
+            print(i+1,end=", ")
+            print(plTitle_list[i], end=", ")
+            print(plId_list[i])
+                
+        pl_select = int(input("Select playlist: ")) #variable for selecting which playlist
+        pl_select = pl_select - 1
+        print("pl_select: ", pl_select)
+        pl_id = plId_list[pl_select] 
+        vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_id) #gets videos in playlist
+        go  = True
+
+            
+        for i in range(len(vid_titlelist)):
+            print(i+1,end=", ")
+            print("Title: ",vid_titlelist[i], " Channel: ", vid_channamelist[i], " Video ID: ", vid_idlist[i])
+                
+        pl_search = 0 #changed to 0 so it doesn't print willy nilly
+
+        go = csvmenu(vid_titlelist, vid_channamelist, vid_idlist, go)
+        if go is False:
+            break
+
+        print()
 
 
 def menu2():
@@ -281,9 +268,11 @@ def menu2():
 
 
 
-
+def chan_test():
+    chan_search_menu()
             
 
 
 #menu()
-menu2()
+#menu2()
+chan_search_menu()
