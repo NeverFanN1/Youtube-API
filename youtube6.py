@@ -200,6 +200,32 @@ def chan_search_menu():
 
         print()
 
+def chan_url(url): #work on channel later, won't work for 
+    gotId = False
+
+    regex = r"^https?:\/\/(www\.)?youtube\.com\/(channel\/(UC[\w-]{21}[AQgw])|(c\/|user\/|@)([\w@-]+))$"
+
+    match = re.search(regex, url)
+    if match:
+        if match.group(3): #id?
+            gotId = True
+            return match.group(3), gotId
+        elif match.group(5):
+            gotId = False
+            return match.group(5), gotId
+    else:
+        return None, False
+
+def chan_url_runner():
+    url = input("Enter channel  URL: ")
+
+    matchtest, gotId = chan_url(url)
+    print(matchtest)
+    if gotId == True:
+        print("ID found")
+    else:
+        print("ID not found")
+
 
 def menu2():
     csvchoice = '0'
@@ -207,51 +233,9 @@ def menu2():
     while choice != 0:
         choice2 = input("Enter 'a' search for channel and get playlists, 'b' to enter channel URL, 'c' to enter playlist URL, and 'd' to exit: ")
         if choice2 == 'a':
-            channel = input("Enter channel to search for: ")
-            print()
-
-            Id_list, name_list = chan_search(channel) #searches channels
-            
-            for i in range(len(Id_list)): #prints out channel search
-                print(i+1,end=", ")
-                print(name_list[i], end=", ")
-                print(Id_list[i])
-                
-            select = int(input("Select channel: ")) #selects channel
-            select = select - 1
-            plTitle_select = Id_list[select]
-            plTitle_list, plId_list = pl_find(plTitle_select) #gets playlists from channel
-
-            pl_search = 1
-
-            while pl_search != 0:
-
-                for i in range(len(Id_list)):
-                    print(i+1,end=", ")
-                    print(plTitle_list[i], end=", ")
-                    print(plId_list[i])
-                
-                pl_select = int(input("Select playlist: ")) #variable for selecting which playlist
-                pl_select = pl_select - 1
-                print("pl_select: ", pl_select)
-                pl_id = plId_list[pl_select] 
-                vid_response, vid_titlelist , vid_channamelist, vid_idlist = vid_find(pl_id) #gets videos in playlist
-                go  = True
-
-            
-                for i in range(len(vid_titlelist)):
-                    print(i+1,end=", ")
-                    print("Title: ",vid_titlelist[i], " Channel: ", vid_channamelist[i], " Video ID: ", vid_idlist[i])
-                
-                pl_search = 0 #changed to 0 so it doesn't print willy nilly
-
-                go = csvmenu(vid_titlelist, vid_channamelist, vid_idlist, go)
-                if go is False:
-                    break
-
-                print()
-        elif choice2 == 'b': #will have option for getting channel ID from channel URL
-            print("Placeholder")
+            chan_search_menu()
+        elif choice2 == 'b': #gets channel ID from URL, will have option to search for channel or use API to find ID 
+            chan_url_runner()
         elif choice2 == 'c': #add option to search playlist videos by title or whatnot
             url = input("Enter playlist URL: ")
             pl_id = pl_url(url) #gets playlist ID from URL
@@ -268,11 +252,8 @@ def menu2():
 
 
 
-def chan_test():
-    chan_search_menu()
             
 
 
-#menu()
-#menu2()
-chan_search_menu()
+
+menu2()
