@@ -200,31 +200,49 @@ def chan_search_menu():
 
         print()
 
+
 def chan_url(url): #work on channel later, won't work for 
     gotId = False
+    matchno = 0
 
-    regex = r"^https?:\/\/(www\.)?youtube\.com\/(channel\/(UC[\w-]{21}[AQgw])|(c\/|user\/|@)([\w@-]+))$"
+    regex = re.compile(r"^https?://(?:www\.)?youtube\.com/(?:" 
+                     r"channel/(UC[\w-]{22})|"    # Channel ID
+                     r"c/([\w-]+)|"              # Custom URL
+                     r"user/([\w-]+)|"           # Legacy Username
+                     r"(@[\w-]+)"                # Handle URL
+                     r")/?$")  # Make trailing slash optional
 
     match = re.search(regex, url)
     if match:
-        if match.group(3): #id?
-            gotId = True
-            return match.group(3), gotId
-        elif match.group(5):
-            gotId = False
-            return match.group(5), gotId
+        if match.group(1):  # Channel ID (Starts with 'UC')
+            matchno = 1
+            return match.group(1), True, matchno
+        elif match.group(2):  # Custom URL
+            matchno = 2
+            return match.group(2), False, matchno
+        elif match.group(3):  # Legacy Username
+            matchno = 3
+            return match.group(3), False, matchno
+        elif match.group(4):  # Handle (@username)
+            matchno = 4
+            return match.group(4), False, matchno
     else:
+        print("Else")
         return None, False
-
+    
 def chan_url_runner():
     url = input("Enter channel  URL: ")
 
-    matchtest, gotId = chan_url(url)
+    #matchtest, gotId = chan_url(url)
+    matchtest, gotId, matchno = chan_url(url)
     print(matchtest)
+    print(matchno)
     if gotId == True:
         print("ID found")
     else:
         print("ID not found")
+
+
 
 
 def menu2():
@@ -250,9 +268,6 @@ def menu2():
         else:
             print("Wrong input entered")
 
-
-
-            
 
 
 
