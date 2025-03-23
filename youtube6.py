@@ -2,6 +2,7 @@ from googleapiclient.discovery import build
 import creds
 import csv
 import re
+import requests
 
 api_key = creds.api_key
 youtube = build('youtube', 'v3', developerKey=api_key)
@@ -30,14 +31,14 @@ def chan_search(channel):
     return Id_list, name_list
 
 
-def pl_find(select, Id_list): #prints channel playlists?
+def pl_find(channelID): #prints channel playlists?
     
     plId_list = []
     plTitle_list = []
 
     pl_request = youtube.playlists().list(
         part='contentDetails, snippet',
-        channelId=Id_list[select]
+        channelId=channelID
     )
     pl_response = pl_request.execute()
 
@@ -45,39 +46,12 @@ def pl_find(select, Id_list): #prints channel playlists?
         print()
 
     for i in pl_response['items']:
-        #print(i['id'])
-        #print(i['snippet']['title'])
-        #print()
 
         plId_list.append(i['id'])
         plTitle_list.append(i['snippet']['title'])
     
     return plTitle_list, plId_list
 
-#test code
-def pl_find(pltitle_select): #prints channel playlists
-    
-    plId_list = []
-    plTitle_list = []
-
-    pl_request = youtube.playlists().list(
-        part='contentDetails, snippet',
-        channelId=pltitle_select
-    )
-    pl_response = pl_request.execute()
-
-    for i in pl_response:
-        print()
-
-    for i in pl_response['items']:
-        #print(i['id'])
-        #print(i['snippet']['title'])
-        #print()
-
-        plId_list.append(i['id'])
-        plTitle_list.append(i['snippet']['title'])
-    
-    return plTitle_list, plId_list
 
 
 def vid_find(pl_id): #gets videos in playlist 
@@ -169,13 +143,67 @@ def chan_search_menu():
     select = int(input("Select channel: ")) #selects channel
     select = select - 1
     plTitle_select = Id_list[select]
-    plTitle_list, plId_list = pl_find(plTitle_select) #gets playlists from channel
+    print("plTitle_select ,", plTitle_select)
+    chan_playlist_print(plTitle_select)
+
+
+def chan_url(url): #work on channel later, won't work for 
+    gotId = False
+    matchno = 0
+
+    regex = re.compile(r"^https?://(?:www\.)?youtube\.com/(?:" 
+                     r"channel/(UC[\w-]{22})|"    #Channel ID
+                     r"c/([\w-]+)|"              #Custom URL
+                     r"user/([\w-]+)|"           #/user
+                     r"(@[\w-]+)"                #Handle URL
+                     r")/?$")  #Make trailing slash optional
+
+    match = re.search(regex, url)
+    if match:
+        if match.group(1):  #Channel ID (Starts with 'UC')
+            matchno = 1
+            return match.group(1), True, matchno
+        elif match.group(2):  #Custom URL
+            matchno = 2
+            return match.group(2), False, matchno
+        elif match.group(3):   #/user
+            matchno = 3
+            return match.group(3), False, matchno
+        elif match.group(4):  #Handle (@username)
+            matchno = 4
+            print("matchno 4")
+            return match.group(4), False, matchno
+    else:
+        print("Else")
+        return None, False, -1
+    
+def chan_url_runner():
+    url = input("Enter channel  URL: ")
+
+    matchtest, gotId, matchno = chan_url(url)
+    print(matchtest)
+    print(matchno)
+    if gotId == True:
+        print("ID found")
+    else:
+        if matchno == 2 or matchno == 3:
+            channelID = chan_username(matchtest)
+            print(channelID)
+            chan_playlist_print(channelID)
+
+        else:
+            channelID = chan_username(matchtest)
+            print(channelID)
+            chan_playlist_print(channelID)
+
+def chan_playlist_print(channelID):
+    plTitle_list, plId_list = pl_find(channelID) #gets playlists from channel
 
     pl_search = 1
 
     while pl_search != 0:
 
-        for i in range(len(Id_list)):
+        for i in range(len(plTitle_list)):
             print(i+1,end=", ")
             print(plTitle_list[i], end=", ")
             print(plId_list[i])
@@ -200,51 +228,30 @@ def chan_search_menu():
 
         print()
 
+#haven't tested chan_username() and chan_handle() before
+def chan_username(username):
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=id&forUsername={username}&key={api_key}"
+    response = requests.get(url).json()
 
-def chan_url(url): #work on channel later, won't work for 
-    gotId = False
-    matchno = 0
-
-    regex = re.compile(r"^https?://(?:www\.)?youtube\.com/(?:" 
-                     r"channel/(UC[\w-]{22})|"    # Channel ID
-                     r"c/([\w-]+)|"              # Custom URL
-                     r"user/([\w-]+)|"           # Legacy Username
-                     r"(@[\w-]+)"                # Handle URL
-                     r")/?$")  # Make trailing slash optional
-
-    match = re.search(regex, url)
-    if match:
-        if match.group(1):  # Channel ID (Starts with 'UC')
-            matchno = 1
-            return match.group(1), True, matchno
-        elif match.group(2):  # Custom URL
-            matchno = 2
-            return match.group(2), False, matchno
-        elif match.group(3):  # Legacy Username
-            matchno = 3
-            return match.group(3), False, matchno
-        elif match.group(4):  # Handle (@username)
-            matchno = 4
-            return match.group(4), False, matchno
-    else:
-        print("Else")
-        return None, False
-    
-def chan_url_runner():
-    url = input("Enter channel  URL: ")
-
-    #matchtest, gotId = chan_url(url)
-    matchtest, gotId, matchno = chan_url(url)
-    print(matchtest)
-    print(matchno)
-    if gotId == True:
-        print("ID found")
-    else:
+    if "items" in response and response["items"]:
+        return response["items"][0]["id"]  # Channel ID
+    else: # or return none
         print("ID not found")
+        return None
+
+def chan_handle(handle):
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=id&forHandle={handle}&key={api_key}"
+
+    response = requests.get(url).json()
+    if "items" in response and response["items"]:
+        return response["items"][0]["id"] #channel id
+    else: # or return none
+        print("ID not found")
+        return None
 
 
 
-
+#maybe change menu csv thing to broader function?
 def menu2():
     csvchoice = '0'
     choice = 1
@@ -252,7 +259,7 @@ def menu2():
         choice2 = input("Enter 'a' search for channel and get playlists, 'b' to enter channel URL, 'c' to enter playlist URL, and 'd' to exit: ")
         if choice2 == 'a':
             chan_search_menu()
-        elif choice2 == 'b': #gets channel ID from URL, will have option to search for channel or use API to find ID 
+        elif choice2 == 'b':
             chan_url_runner()
         elif choice2 == 'c': #add option to search playlist videos by title or whatnot
             url = input("Enter playlist URL: ")
