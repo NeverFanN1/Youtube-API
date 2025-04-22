@@ -163,7 +163,7 @@ def chan_url(url): #work on channel later, won't work for
         if match.group(1):  #Channel ID (Starts with 'UC')
             matchno = 1
             return match.group(1), True, matchno
-        elif match.group(2):  #Custom URL
+        elif match.group(2):  #Custom URL, works
             matchno = 2
             return match.group(2), False, matchno
         elif match.group(3):   #/user
@@ -181,25 +181,30 @@ def chan_url_runner():
     url = input("Enter channel  URL: ")
 
     matchtest, gotId, matchno = chan_url(url)
-    print(matchtest)
+    #print(matchtest)
     print(matchno)
-    if gotId == True:
-        print("ID found")
+    if matchno == 2 or matchno == 3:
+        channelID = chan_username(matchtest)
+        print(channelID)
+        chan_playlist_print(channelID)
+    elif matchno == 4:
+        channelID = chan_handle(matchtest)
+        print(channelID)
+        chan_playlist_print(channelID)
     else:
-        if matchno == 2 or matchno == 3:
-            channelID = chan_username(matchtest)
-            print(channelID)
-            chan_playlist_print(channelID)
+        #channelID = chan_username(matchtest)
+        print(matchtest) #matchtest should be channelID
+        chan_playlist_print(matchtest)
 
-        else:
-            channelID = chan_username(matchtest)
-            print(channelID)
-            chan_playlist_print(channelID)
 
 def chan_playlist_print(channelID):
     plTitle_list, plId_list = pl_find(channelID) #gets playlists from channel
 
-    pl_search = 1
+    if not plTitle_list:
+        print("No public playlists found.\n")
+        pl_search = 0
+    else:
+        pl_search = 1
 
     while pl_search != 0:
 
@@ -236,7 +241,7 @@ def chan_username(username):
     if "items" in response and response["items"]:
         return response["items"][0]["id"]  # Channel ID
     else: # or return none
-        print("ID not found")
+        print("ID not found by chan_username()")
         return None
 
 def chan_handle(handle):
@@ -246,7 +251,7 @@ def chan_handle(handle):
     if "items" in response and response["items"]:
         return response["items"][0]["id"] #channel id
     else: # or return none
-        print("ID not found")
+        print("ID not found by chan_handle()")
         return None
 
 
@@ -256,7 +261,7 @@ def menu2():
     csvchoice = '0'
     choice = 1
     while choice != 0:
-        choice2 = input("Enter 'a' search for channel and get playlists, 'b' to enter channel URL, 'c' to enter playlist URL, and 'd' to exit: ")
+        choice2 = input("\nEnter 'a' search for channel and get playlists, 'b' to enter channel URL, 'c' to enter playlist URL, and 'd' to exit: ")
         if choice2 == 'a':
             chan_search_menu()
         elif choice2 == 'b':
